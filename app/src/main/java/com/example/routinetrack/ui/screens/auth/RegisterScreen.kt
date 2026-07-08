@@ -112,7 +112,7 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth(),
             onClick = onLoginClick
         ) {
-            Text("Ho gia un account")
+            Text("Ho già un account")
         }
     }
 }

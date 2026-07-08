@@ -291,7 +291,7 @@ fun habitEmojiFor(habit: Habit): String {
         "workout" in title || "palestra" in title || "fitness" in title -> "💪"
         "study" in title || "studio" in title || "read" in title || "leggi" in title -> "📚"
         "meditation" in title || "medita" in title || "mind" in title -> "🧘"
-        "coffee" in title || "caffe" in title -> "☕"
+        "coffee" in title || "caffe" in title || "caffè" in title -> "☕"
         else -> habit.category.routineEmoji()
     }
 }

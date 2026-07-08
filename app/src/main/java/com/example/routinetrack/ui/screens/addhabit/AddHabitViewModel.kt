@@ -155,7 +155,7 @@ class AddHabitViewModel(
         }
 
         val error = when {
-            state.title.isBlank() -> "Il titolo e obbligatorio"
+            state.title.isBlank() -> "Il titolo è obbligatorio"
             state.type == HabitType.NUMERIC && (target == null || target <= 0.0) ->
                 "Per una habit numerica serve un target maggiore di 0"
             state.unit == HabitUnit.TIME && !isValidDurationText(state.targetValue) ->

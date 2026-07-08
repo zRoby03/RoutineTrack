@@ -58,7 +58,7 @@ object NotificationHelper {
         val notification = NotificationCompat.Builder(context, HABIT_REMINDER_CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("RoutineTrack")
-            .setContentText("E il momento di completare: $habitTitle")
+            .setContentText("È il momento di completare: $habitTitle")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(contentIntent)
             .setAutoCancel(true)

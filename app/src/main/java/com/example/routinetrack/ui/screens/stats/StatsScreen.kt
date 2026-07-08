@@ -163,7 +163,7 @@ fun StatsScreen(viewModel: StatsViewModel) {
         item {
             RoutineTrackCard(cornerRadius = 30.dp) {
                 Text("Report", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                SettingsRow(title = "Piu costante", value = stats.mostCompletedHabit ?: "-")
+                SettingsRow(title = "Più costante", value = stats.mostCompletedHabit ?: "-")
                 SettingsRow(title = "Da recuperare", value = stats.leastCompletedHabit ?: "-")
                 SettingsRow(title = "Giorno migliore", value = stats.bestDayName ?: "-")
             }

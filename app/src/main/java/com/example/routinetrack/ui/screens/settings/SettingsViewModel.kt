@@ -95,7 +95,7 @@ class SettingsViewModel(
             message.value = if (result.isSuccess) {
                 "Sincronizzazione completata"
             } else {
-                "Sincronizzazione non riuscita. Riprova tra poco."
+                "Sincronizzazione non riuscita. Riprova più tardi."
             }
         }
     }
@@ -108,7 +108,7 @@ class SettingsViewModel(
             message.value = if (result.isSuccess) {
                 "Dati cloud ripristinati"
             } else {
-                "Ripristino non riuscito. Riprova tra poco."
+                "Ripristino non riuscito. Riprova più tardi."
             }
         }
     }

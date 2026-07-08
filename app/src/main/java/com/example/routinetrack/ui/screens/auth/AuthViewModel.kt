@@ -116,7 +116,7 @@ class AuthViewModel(
                     isLoading = false,
                     isLoggedIn = result.isSuccess,
                     errorMessage = result.exceptionOrNull()?.message ?: if (result.isFailure) {
-                        "Registrazione non riuscita. Riprova tra poco."
+                        "Registrazione non riuscita. Riprova più tardi."
                     } else {
                         null
                     }
@@ -141,7 +141,7 @@ class AuthViewModel(
                     isResetCodeSent = result.isSuccess,
                     errorMessage = result.exceptionOrNull()?.message,
                     successMessage = if (result.isSuccess) {
-                        "Se l'email e registrata, riceverai un codice a 6 cifre."
+                        "Se l'email è registrata, riceverai un codice a 6 cifre."
                     } else {
                         null
                     }

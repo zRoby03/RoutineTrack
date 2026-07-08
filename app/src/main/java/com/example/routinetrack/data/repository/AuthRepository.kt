@@ -117,15 +117,15 @@ class AuthRepository(
             this is HttpException && code() == 401 && action == AuthAction.LOGIN ->
                 "Email e/o password non corrette."
             this is HttpException && code() == 409 && action == AuthAction.REGISTER ->
-                "Email gia registrata. Prova ad accedere oppure usa un'altra email."
+                "Email già registrata. Prova ad accedere oppure usa un'altra email."
             this is HttpException && code() == 400 && action == AuthAction.RESET_PASSWORD ->
                 "Codice non valido o scaduto."
             this is HttpException && code() == 503 && action == AuthAction.REQUEST_PASSWORD_RESET ->
-                "Recupero password non disponibile. Riprova tra poco."
+                "Non riesco a inviare il codice ora. Riprova più tardi."
             this is HttpException && code() == 400 ->
                 "Controlla i dati inseriti e riprova."
             this is HttpException ->
-                "Operazione non riuscita. Riprova tra poco."
+                "Operazione non riuscita. Riprova più tardi."
             this is IOException ->
                 "Connessione non riuscita. Controlla la rete e riprova."
             else ->

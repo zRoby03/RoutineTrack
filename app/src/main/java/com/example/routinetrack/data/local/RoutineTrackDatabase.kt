@@ -37,7 +37,7 @@ abstract class RoutineTrackDatabase : RoomDatabase() {
                     RoutineTrackDatabase::class.java,
                     "routine_track.db"
                 )
-                    // Singleton thread-safe: evita di aprire piu connessioni Room alla stessa base dati.
+                    // Singleton thread-safe: evita di aprire più connessioni Room alla stessa base dati.
                     // In un progetto universitario iniziale consente di iterare sullo schema.
                     // In produzione servirebbero migration esplicite.
                     .fallbackToDestructiveMigration()

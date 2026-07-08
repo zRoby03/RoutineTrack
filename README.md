@@ -1,6 +1,6 @@
 # RoutineTrack
 
-RoutineTrack e un'app Android/Kotlin per il tracciamento personale delle abitudini. Il progetto usa Jetpack Compose, Material 3, Room, Retrofit, WorkManager e un backend Flask collegabile a TiDB.
+RoutineTrack è un'app Android/Kotlin per il tracciamento personale delle abitudini. Il progetto usa Jetpack Compose, Material 3, Room, Retrofit, WorkManager e un backend Flask collegabile a TiDB.
 
 ## Funzionalita principali
 
@@ -74,7 +74,7 @@ Se Render genera una URL diversa, cambia solo quella riga e ricompila l'app.
 
 ## Render
 
-Se il servizio Render e creato manualmente dalla root della repository, usa:
+Se il servizio Render è creato manualmente dalla root della repository, usa:
 
 ```text
 Build Command: pip install -r requirements.txt
@@ -126,4 +126,4 @@ Da terminale:
 
 Frase pronta per relazione:
 
-> Nel progetto e stata rimossa la precedente sezione Coach, ritenuta non necessaria rispetto allo scopo principale dell'applicazione. Al suo posto e stata introdotta una gestione account con sincronizzazione cloud. Ogni utente puo registrarsi tramite email e password, creare le proprie routine e sincronizzarle con un backend Flask collegato a un database TiDB. L'app utilizza Room come database locale offline-first e Retrofit per comunicare con il web service remoto.
+> Nel progetto è stata rimossa la precedente sezione Coach, ritenuta non necessaria rispetto allo scopo principale dell'applicazione. Al suo posto è stata introdotta una gestione account con sincronizzazione cloud. Ogni utente può registrarsi tramite email e password, creare le proprie routine e sincronizzarle con un backend Flask collegato a un database TiDB. L'app utilizza Room come database locale offline-first e Retrofit per comunicare con il web service remoto.

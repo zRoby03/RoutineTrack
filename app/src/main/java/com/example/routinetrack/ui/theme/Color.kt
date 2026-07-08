@@ -17,7 +17,7 @@ val KhakiSoft = Color(0xFFF1E9D4)
 val SageSoft = Color(0xFFE6EDE2)
 val RedSoft = Color(0xFFF2DEDA)
 
-// Alias mantenuti per i componenti gia esistenti durante la migrazione UI.
+// Alias mantenuti per i componenti già esistenti durante la migrazione UI.
 val PastelPink = RedSoft
 val PastelGreen = SageSoft
 val PastelBlue = Color(0xFFE8ECF4)

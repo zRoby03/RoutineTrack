@@ -164,7 +164,7 @@ def send_password_reset_email(to_email: str, code: str) -> None:
             [
                 "Ciao,",
                 "",
-                f"Il tuo codice per aggiornare la password RoutineTrack e: {code}",
+                f"Il tuo codice per aggiornare la password RoutineTrack è: {code}",
                 "",
                 "Il codice scade tra 15 minuti.",
                 "Se non hai richiesto tu il codice, puoi ignorare questa email.",
@@ -274,7 +274,7 @@ def request_password_reset():
     if not email_sender_configured():
         return jsonify({"error": "password reset is temporarily unavailable"}), 503
 
-    generic_response = {"message": "Se l'email e registrata, riceverai un codice."}
+    generic_response = {"message": "Se l'email è registrata, riceverai un codice."}
     timestamp = now_ms()
     with connection() as db:
         with db.cursor() as cursor:

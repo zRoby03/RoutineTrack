@@ -26,7 +26,7 @@ class SuggestHabitRiskUseCase {
             val daysMissing = java.time.temporal.ChronoUnit.DAYS.between(lastActiveDate, referenceDate)
 
             if (daysMissing >= riskAfterDays) {
-                "${habit.title} e a rischio: non la completi da $daysMissing giorni."
+                "${habit.title} è a rischio: non la completi da $daysMissing giorni."
             } else {
                 null
             }

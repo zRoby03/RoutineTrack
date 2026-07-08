@@ -38,7 +38,7 @@ class HomeViewModel(
     private val selectedDate = MutableStateFlow(LocalDate.now())
     private val transientError = MutableStateFlow<String?>(null)
 
-    // StateFlow espone uno stato gia pronto per Compose.
+    // StateFlow espone uno stato già pronto per Compose.
     // Le coroutine partono nel viewModelScope, quindi non bloccano il Main Thread.
     val uiState: StateFlow<HomeUiState> = combine(
         selectedDate,

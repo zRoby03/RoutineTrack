@@ -22,7 +22,7 @@ class StatsRepository(
     private val calculateHabitStats: CalculateHabitStatsUseCase = CalculateHabitStatsUseCase()
 ) {
     // Le statistiche sono calcolate nel data layer, non nei composable.
-    // In questo modo StatsScreen resta solo una vista e la logica e testabile.
+    // In questo modo StatsScreen resta solo una vista e la logica è testabile.
     fun observeStats(): Flow<HabitStats> {
         return userDao.getLoggedUser().flatMapLatest { user ->
             val userId = user?.remoteId ?: return@flatMapLatest flowOf(HabitStats())

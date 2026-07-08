@@ -40,7 +40,7 @@ Build Command: pip install -r requirements.txt
 Start Command: gunicorn app:app
 ```
 
-Se nei log Render vedi `routine start:app`, lo Start Command nel pannello Render e errato.
+Se nei log Render vedi `routine start:app`, lo Start Command nel pannello Render è errato.
 Apri il servizio su Render, vai in Settings e sostituiscilo con:
 
 ```text
@@ -77,7 +77,7 @@ SMTP_USE_SSL=false
 
 Le variabili `SMTP_*` servono per inviare il codice OTP di recupero password. Puoi usare Brevo,
 Gmail con app password o un altro provider SMTP. Senza SMTP configurato, il recupero password
-rispondera con un errore temporaneo e non inviera email.
+risponderà con un errore temporaneo e non invierà email.
 
 ## URL Android finale
 
