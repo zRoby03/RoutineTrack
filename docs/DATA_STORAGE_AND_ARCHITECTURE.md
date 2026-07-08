@@ -60,7 +60,7 @@ Il database usa un Singleton thread-safe:
 RoutineTrackDatabase.getDatabase(context)
 ```
 
-Questo evita di creare piu istanze del database durante l'esecuzione dell'app. In fase di sviluppo il progetto usa `fallbackToDestructiveMigration`; in produzione sarebbe meglio creare migration esplicite per non perdere dati quando cambia lo schema.
+Questo evita di creare più istanze del database durante l'esecuzione dell'app. In fase di sviluppo il progetto usa `fallbackToDestructiveMigration`; in produzione sarebbe meglio creare migration esplicite per non perdere dati quando cambia lo schema.
 
 ## Repository
 
@@ -117,7 +117,7 @@ Utente compila il form
 -> HomeScreen si aggiorna automaticamente
 ```
 
-La UI non chiama mai direttamente il DAO. Questo rende il codice piu pulito, testabile e coerente con MVVM.
+La UI non chiama mai direttamente il DAO. Questo rende il codice più pulito, testabile e coerente con MVVM.
 
 ## Flusso completamento habit
 
@@ -147,11 +147,11 @@ RoutineTrack usa:
 - Flow per osservare il database;
 - repository per isolare I/O e logica dati.
 
-Questo evita blocchi dell'interfaccia e rende l'app piu fluida.
+Questo evita blocchi dell'interfaccia e rende l'app più fluida.
 
 ## Collegamento con backend e Retrofit
 
-La struttura attuale e gia pronta per backend remoto. Retrofit e collegato tramite `ApiService` e viene usato dai repository, non dalla UI.
+La struttura attuale è già pronta per backend remoto. Retrofit è collegato tramite `ApiService` e viene usato dai repository, non dalla UI.
 
 Il comportamento e offline-first:
 
@@ -160,12 +160,12 @@ Scrivo prima in Room
 -> imposto pendingSync = true
 -> SyncRepository invia le modifiche a TiDB
 -> se fallisce, pendingSync resta true
--> la sync manuale o un worker puo riprovare
+-> la sync manuale o un worker può riprovare
 ```
 
-In futuro si puo migliorare aggiungendo:
+In futuro si può migliorare aggiungendo:
 
 - login Google opzionale;
 - token JWT reale;
 - refresh token;
-- sync periodica piu robusta.
+- sync periodica più robusta.
