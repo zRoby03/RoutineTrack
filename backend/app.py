@@ -15,6 +15,22 @@ DB_PATH = BASE_DIR / "routinetrack.db"
 app = Flask(__name__)
 
 
+@app.get("/")
+def index():
+    return jsonify(
+        {
+            "name": "RoutineTrack local legacy backend",
+            "status": "ok",
+            "message": "Per la versione finale usa backend_tidb.",
+        }
+    )
+
+
+@app.get("/health")
+def health():
+    return jsonify({"status": "ok", "backend": "local-legacy"})
+
+
 def get_db() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
