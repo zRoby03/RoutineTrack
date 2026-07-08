@@ -13,6 +13,20 @@ data class RegisterRequestDto(
     val displayName: String?
 )
 
+data class PasswordResetRequestDto(
+    val email: String
+)
+
+data class PasswordResetConfirmDto(
+    val email: String,
+    val code: String,
+    val newPassword: String
+)
+
+data class MessageResponseDto(
+    val message: String? = null
+)
+
 data class AuthResponseDto(
     val userId: String,
     val email: String,

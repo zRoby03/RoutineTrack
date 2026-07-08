@@ -4,6 +4,9 @@ import com.example.routinetrack.data.remote.dto.AuthResponseDto
 import com.example.routinetrack.data.remote.dto.CompletionDto
 import com.example.routinetrack.data.remote.dto.HabitDto
 import com.example.routinetrack.data.remote.dto.LoginRequestDto
+import com.example.routinetrack.data.remote.dto.MessageResponseDto
+import com.example.routinetrack.data.remote.dto.PasswordResetConfirmDto
+import com.example.routinetrack.data.remote.dto.PasswordResetRequestDto
 import com.example.routinetrack.data.remote.dto.RegisterRequestDto
 import com.example.routinetrack.data.remote.dto.SyncRequestDto
 import com.example.routinetrack.data.remote.dto.SyncResponseDto
@@ -24,6 +27,12 @@ interface ApiService {
 
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequestDto): AuthResponseDto
+
+    @POST("auth/request-password-reset")
+    suspend fun requestPasswordReset(@Body request: PasswordResetRequestDto): MessageResponseDto
+
+    @POST("auth/reset-password")
+    suspend fun resetPassword(@Body request: PasswordResetConfirmDto): MessageResponseDto
 
     @GET("habits")
     suspend fun getHabits(@Query("userId") userId: String): List<HabitDto>

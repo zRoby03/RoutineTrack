@@ -26,6 +26,7 @@ import com.example.routinetrack.ui.screens.addhabit.AddHabitScreen
 import com.example.routinetrack.ui.screens.addhabit.AddHabitViewModel
 import com.example.routinetrack.ui.screens.auth.AuthViewModel
 import com.example.routinetrack.ui.screens.auth.LoginScreen
+import com.example.routinetrack.ui.screens.auth.PasswordResetScreen
 import com.example.routinetrack.ui.screens.auth.RegisterScreen
 import com.example.routinetrack.ui.screens.calendar.CalendarScreen
 import com.example.routinetrack.ui.screens.calendar.CalendarViewModel
@@ -56,7 +57,7 @@ fun RoutineTrackNavigation(
         Screen.Stats.route,
         Screen.Settings.route
     )
-    val authRoutes = setOf(Screen.Login.route, Screen.Register.route)
+    val authRoutes = setOf(Screen.Login.route, Screen.Register.route, Screen.PasswordReset.route)
 
     LaunchedEffect(loggedUser, currentRoute) {
         if (loggedUser != null && currentRoute in authRoutes) {
@@ -104,7 +105,8 @@ fun RoutineTrackNavigation(
                                 popUpTo(Screen.Login.route) { inclusive = true }
                             }
                         },
-                        onRegisterClick = { navController.navigate(Screen.Register.route) }
+                        onRegisterClick = { navController.navigate(Screen.Register.route) },
+                        onForgotPasswordClick = { navController.navigate(Screen.PasswordReset.route) }
                     )
                 }
                 composable(Screen.Register.route) {
@@ -119,6 +121,20 @@ fun RoutineTrackNavigation(
                             }
                         },
                         onLoginClick = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.PasswordReset.route) {
+                    val authViewModel: AuthViewModel = viewModel(
+                        factory = AuthViewModel.factory(container.authRepository)
+                    )
+                    PasswordResetScreen(
+                        viewModel = authViewModel,
+                        onLoginClick = {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(Screen.PasswordReset.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
                     )
                 }
                 composable(Screen.Home.route) {

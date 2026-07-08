@@ -16,10 +16,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,7 +31,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun LoginScreen(
     viewModel: AuthViewModel,
     onLoginSuccess: () -> Unit,
-    onRegisterClick: () -> Unit
+    onRegisterClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
 
@@ -59,6 +63,7 @@ fun LoginScreen(
             onValueChange = viewModel::updateEmail,
             label = { Text("Email") },
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -68,9 +73,16 @@ fun LoginScreen(
             onValueChange = viewModel::updatePassword,
             label = { Text("Password") },
             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true
         )
+        TextButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onForgotPasswordClick
+        ) {
+            Text("Password dimenticata?")
+        }
         state.errorMessage?.let {
             Spacer(modifier = Modifier.height(10.dp))
             Text(text = it, color = MaterialTheme.colorScheme.error)

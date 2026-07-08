@@ -4,6 +4,7 @@ package com.example.routinetrack.navigation
 sealed class Screen(val route: String, val title: String) {
     object Login : Screen("login", "Login")
     object Register : Screen("register", "Registrati")
+    object PasswordReset : Screen("password_reset", "Recupera password")
     object Home : Screen("home", "Oggi")
     object AddHabit : Screen("add_habit?habitId={habitId}", "Aggiungi") {
         const val baseRoute = "add_habit"

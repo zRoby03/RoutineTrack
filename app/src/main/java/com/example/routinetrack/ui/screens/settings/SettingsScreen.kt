@@ -165,9 +165,9 @@ fun SettingsScreen(
         }
         item {
             SettingsGroup(title = "Data & Sync") {
-                SettingsRow(title = "Backend URL", value = state.baseUrl)
-                SettingsRow(title = "Last sync", value = state.lastSyncLabel)
-                SettingsRow(title = "Unsynced items", value = state.counts.unsyncedItems.toString())
+                SettingsRow(title = "Cloud URL", value = state.baseUrl)
+                SettingsRow(title = "Ultima sync", value = state.lastSyncLabel)
+                SettingsRow(title = "Elementi da sincronizzare", value = state.counts.unsyncedItems.toString())
                 state.message?.let { message ->
                     Text(
                         text = message,
@@ -178,7 +178,7 @@ fun SettingsScreen(
                 PrimaryKhakiButton(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.isSyncing,
-                    text = if (state.isSyncing) "Sync..." else "Sync Now",
+                    text = if (state.isSyncing) "Sincronizzo..." else "Sincronizza ora",
                     onClick = viewModel::syncNow,
                     leadingIcon = {
                         Icon(Icons.Default.Sync, contentDescription = null)
@@ -189,7 +189,7 @@ fun SettingsScreen(
                     enabled = !state.isSyncing,
                     onClick = viewModel::restoreFromCloud
                 ) {
-                    Text("Restore from Cloud")
+                    Text("Ripristina dal cloud")
                 }
             }
         }

@@ -92,7 +92,11 @@ class SettingsViewModel(
             syncing.value = true
             val result = syncManager.syncNow()
             syncing.value = false
-            message.value = if (result.isSuccess) "Sync completata" else "Backend non disponibile"
+            message.value = if (result.isSuccess) {
+                "Sincronizzazione completata"
+            } else {
+                "Sincronizzazione non riuscita. Riprova tra poco."
+            }
         }
     }
 
@@ -101,7 +105,11 @@ class SettingsViewModel(
             syncing.value = true
             val result = syncManager.restoreFromCloud()
             syncing.value = false
-            message.value = if (result.isSuccess) "Dati cloud ripristinati" else "Restore non riuscito"
+            message.value = if (result.isSuccess) {
+                "Dati cloud ripristinati"
+            } else {
+                "Ripristino non riuscito. Riprova tra poco."
+            }
         }
     }
 

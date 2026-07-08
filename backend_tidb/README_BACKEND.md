@@ -25,6 +25,8 @@ Endpoint principali:
 - `GET /health`
 - `POST /auth/register`
 - `POST /auth/login`
+- `POST /auth/request-password-reset`
+- `POST /auth/reset-password`
 - `GET /sync/<user_id>`
 - `POST /sync/<user_id>`
 
@@ -61,9 +63,21 @@ TIDB_PASSWORD
 TIDB_DATABASE
 TIDB_SSL_CA_CONTENT
 INIT_SCHEMA_ON_START=true
+SMTP_HOST
+SMTP_PORT=587
+SMTP_USERNAME
+SMTP_PASSWORD
+SMTP_FROM
+SMTP_FROM_NAME=RoutineTrack
+SMTP_USE_TLS=true
+SMTP_USE_SSL=false
 ```
 
 `TIDB_SSL_CA_CONTENT` deve contenere il contenuto PEM del certificato, non un path Windows locale.
+
+Le variabili `SMTP_*` servono per inviare il codice OTP di recupero password. Puoi usare Brevo,
+Gmail con app password o un altro provider SMTP. Senza SMTP configurato, il recupero password
+rispondera con un errore temporaneo e non inviera email.
 
 ## URL Android finale
 
