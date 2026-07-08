@@ -66,16 +66,3 @@ CREATE TABLE IF NOT EXISTS sync_state (
         FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE CASCADE
 );
-
-CREATE TABLE IF NOT EXISTS password_reset_codes (
-    id VARCHAR(64) PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    code_hash TEXT NOT NULL,
-    expires_at BIGINT NOT NULL,
-    used BOOLEAN NOT NULL DEFAULT FALSE,
-    attempts INT NOT NULL DEFAULT 0,
-    created_at BIGINT NOT NULL,
-
-    INDEX idx_password_reset_email (email),
-    INDEX idx_password_reset_expires_at (expires_at)
-);

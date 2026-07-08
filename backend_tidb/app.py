@@ -1,13 +1,8 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
-import secrets
-import smtplib
-import ssl
 import time
 import uuid
-from email.message import EmailMessage
-from email.utils import formataddr
 from pathlib import Path
 from typing import Any
 
@@ -25,9 +20,6 @@ load_dotenv(BASE_DIR / ".env")
 
 app = Flask(__name__)
 CORS(app)
-
-RESET_CODE_TTL_MS = 15 * 60 * 1000
-RESET_CODE_MAX_ATTEMPTS = 5
 
 
 def now_ms() -> int:
@@ -136,59 +128,6 @@ def completion_to_dto(
     }
 
 
-def email_sender_configured() -> bool:
-    host = os.getenv("SMTP_HOST")
-    sender = os.getenv("SMTP_FROM") or os.getenv("SMTP_USERNAME") or os.getenv("SMTP_USER")
-    return bool(host and sender)
-
-
-def send_password_reset_email(to_email: str, code: str) -> None:
-    host = os.environ["SMTP_HOST"]
-    port = int(os.getenv("SMTP_PORT", "587"))
-    username = os.getenv("SMTP_USERNAME") or os.getenv("SMTP_USER")
-    password = os.getenv("SMTP_PASSWORD")
-    sender = os.getenv("SMTP_FROM") or username
-    sender_name = os.getenv("SMTP_FROM_NAME", "RoutineTrack")
-    use_ssl = os.getenv("SMTP_USE_SSL", "false").lower() == "true"
-    use_tls = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
-
-    if not sender:
-        raise RuntimeError("SMTP_FROM or SMTP_USERNAME is required")
-
-    message = EmailMessage()
-    message["Subject"] = "RoutineTrack - Codice recupero password"
-    message["From"] = formataddr((sender_name, sender))
-    message["To"] = to_email
-    message.set_content(
-        "\n".join(
-            [
-                "Ciao,",
-                "",
-                f"Il tuo codice per aggiornare la password RoutineTrack è: {code}",
-                "",
-                "Il codice scade tra 15 minuti.",
-                "Se non hai richiesto tu il codice, puoi ignorare questa email.",
-                "",
-                "RoutineTrack",
-            ]
-        )
-    )
-
-    context = ssl.create_default_context()
-    if use_ssl:
-        with smtplib.SMTP_SSL(host, port, timeout=10, context=context) as server:
-            if username and password:
-                server.login(username, password)
-            server.send_message(message)
-        return
-
-    with smtplib.SMTP(host, port, timeout=10) as server:
-        if use_tls:
-            server.starttls(context=context)
-        if username and password:
-            server.login(username, password)
-        server.send_message(message)
-
 
 @app.get("/health")
 def health():
@@ -205,8 +144,6 @@ def index():
                 "/health",
                 "/auth/register",
                 "/auth/login",
-                "/auth/request-password-reset",
-                "/auth/reset-password",
                 "/sync/<user_id>",
             ],
         }
@@ -263,119 +200,6 @@ def login():
         }
     )
 
-
-@app.post("/auth/request-password-reset")
-def request_password_reset():
-    data = json_body()
-    email = normalize_email(data.get("email"))
-    if not email:
-        return jsonify({"error": "email is required"}), 400
-
-    if not email_sender_configured():
-        return jsonify({"error": "password reset is temporarily unavailable"}), 503
-
-    generic_response = {"message": "Se l'email è registrata, riceverai un codice."}
-    timestamp = now_ms()
-    with connection() as db:
-        with db.cursor() as cursor:
-            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
-            user = cursor.fetchone()
-            if user is None:
-                db.commit()
-                return jsonify(generic_response)
-
-            code = f"{secrets.randbelow(1_000_000):06d}"
-            reset_id = uuid.uuid4().hex
-            cursor.execute(
-                "UPDATE password_reset_codes SET used = TRUE WHERE email = %s AND used = FALSE",
-                (email,),
-            )
-            cursor.execute(
-                """
-                INSERT INTO password_reset_codes(
-                    id, email, code_hash, expires_at, used, attempts, created_at
-                ) VALUES (%s, %s, %s, %s, FALSE, 0, %s)
-                """,
-                (
-                    reset_id,
-                    email,
-                    generate_password_hash(code),
-                    timestamp + RESET_CODE_TTL_MS,
-                    timestamp,
-                ),
-            )
-            try:
-                send_password_reset_email(email, code)
-            except Exception:
-                db.rollback()
-                app.logger.exception("Unable to send password reset email")
-                return jsonify({"error": "password reset is temporarily unavailable"}), 503
-        db.commit()
-
-    return jsonify(generic_response)
-
-
-@app.post("/auth/reset-password")
-def reset_password():
-    data = json_body()
-    email = normalize_email(data.get("email"))
-    code = (data.get("code") or "").strip()
-    new_password = data.get("newPassword") or ""
-    if not email or not code or not new_password:
-        return jsonify({"error": "email, code and newPassword are required"}), 400
-    if len(new_password) < 8:
-        return jsonify({"error": "password is too short"}), 400
-
-    timestamp = now_ms()
-    generic_invalid = {"error": "invalid or expired code"}
-    with connection() as db:
-        with db.cursor() as cursor:
-            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
-            user = cursor.fetchone()
-            if user is None:
-                return jsonify(generic_invalid), 400
-
-            cursor.execute(
-                """
-                SELECT * FROM password_reset_codes
-                WHERE email = %s AND used = FALSE
-                ORDER BY created_at DESC
-                LIMIT 1
-                """,
-                (email,),
-            )
-            reset_code = cursor.fetchone()
-            if reset_code is None or int(reset_code["expires_at"]) < timestamp:
-                return jsonify(generic_invalid), 400
-
-            attempts = int(reset_code.get("attempts") or 0)
-            if attempts >= RESET_CODE_MAX_ATTEMPTS:
-                cursor.execute(
-                    "UPDATE password_reset_codes SET used = TRUE WHERE id = %s",
-                    (reset_code["id"],),
-                )
-                db.commit()
-                return jsonify(generic_invalid), 400
-
-            if not check_password_hash(reset_code["code_hash"], code):
-                cursor.execute(
-                    "UPDATE password_reset_codes SET attempts = attempts + 1 WHERE id = %s",
-                    (reset_code["id"],),
-                )
-                db.commit()
-                return jsonify(generic_invalid), 400
-
-            cursor.execute(
-                "UPDATE users SET password_hash = %s, updated_at = %s WHERE id = %s",
-                (generate_password_hash(new_password), timestamp, user["id"]),
-            )
-            cursor.execute(
-                "UPDATE password_reset_codes SET used = TRUE WHERE id = %s",
-                (reset_code["id"],),
-            )
-        db.commit()
-
-    return jsonify({"message": "password updated"})
 
 
 @app.get("/sync/<user_id>")
@@ -535,3 +359,4 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", os.getenv("FLASK_PORT", "5000")))
     debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
     app.run(host="0.0.0.0", port=port, debug=debug)
+

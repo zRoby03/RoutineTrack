@@ -5,8 +5,6 @@ import com.example.routinetrack.data.local.entity.UserEntity
 import com.example.routinetrack.data.mapper.toDomain
 import com.example.routinetrack.data.remote.ApiService
 import com.example.routinetrack.data.remote.dto.LoginRequestDto
-import com.example.routinetrack.data.remote.dto.PasswordResetConfirmDto
-import com.example.routinetrack.data.remote.dto.PasswordResetRequestDto
 import com.example.routinetrack.data.remote.dto.RegisterRequestDto
 import com.example.routinetrack.data.session.SessionManager
 import com.example.routinetrack.data.session.UserSession
@@ -80,26 +78,6 @@ class AuthRepository(
         }.mapAuthFailure(AuthAction.REGISTER)
     }
 
-    suspend fun requestPasswordReset(email: String): Result<Unit> {
-        return runCatching {
-            apiService.requestPasswordReset(PasswordResetRequestDto(email.trim()))
-            Unit
-        }.mapAuthFailure(AuthAction.REQUEST_PASSWORD_RESET)
-    }
-
-    suspend fun resetPassword(email: String, code: String, newPassword: String): Result<Unit> {
-        return runCatching {
-            apiService.resetPassword(
-                PasswordResetConfirmDto(
-                    email = email.trim(),
-                    code = code.trim(),
-                    newPassword = newPassword
-                )
-            )
-            Unit
-        }.mapAuthFailure(AuthAction.RESET_PASSWORD)
-    }
-
     suspend fun logout() {
         userDao.clearUser()
         sessionManager.logout()
@@ -118,10 +96,6 @@ class AuthRepository(
                 "Email e/o password non corrette."
             this is HttpException && code() == 409 && action == AuthAction.REGISTER ->
                 "Email già registrata. Prova ad accedere oppure usa un'altra email."
-            this is HttpException && code() == 400 && action == AuthAction.RESET_PASSWORD ->
-                "Codice non valido o scaduto."
-            this is HttpException && code() == 503 && action == AuthAction.REQUEST_PASSWORD_RESET ->
-                "Non riesco a inviare il codice ora. Riprova più tardi."
             this is HttpException && code() == 400 ->
                 "Controlla i dati inseriti e riprova."
             this is HttpException ->
@@ -135,8 +109,6 @@ class AuthRepository(
 
     private enum class AuthAction {
         LOGIN,
-        REGISTER,
-        REQUEST_PASSWORD_RESET,
-        RESET_PASSWORD
+        REGISTER
     }
 }

@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -31,8 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun LoginScreen(
     viewModel: AuthViewModel,
     onLoginSuccess: () -> Unit,
-    onRegisterClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit
+    onRegisterClick: () -> Unit
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
 
@@ -77,12 +75,6 @@ fun LoginScreen(
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true
         )
-        TextButton(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onForgotPasswordClick
-        ) {
-            Text("Password dimenticata?")
-        }
         state.errorMessage?.let {
             Spacer(modifier = Modifier.height(10.dp))
             Text(text = it, color = MaterialTheme.colorScheme.error)

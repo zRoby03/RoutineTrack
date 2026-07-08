@@ -15,15 +15,9 @@ data class AuthUiState(
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
-    val resetCode: String = "",
-    val newPassword: String = "",
-    val confirmNewPassword: String = "",
-    val isResetCodeSent: Boolean = false,
-    val isPasswordResetComplete: Boolean = false,
     val isLoading: Boolean = false,
     val isLoggedIn: Boolean = false,
-    val errorMessage: String? = null,
-    val successMessage: String? = null
+    val errorMessage: String? = null
 )
 
 class AuthViewModel(
@@ -33,32 +27,19 @@ class AuthViewModel(
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun updateDisplayName(value: String) {
-        _uiState.update { it.copy(displayName = value, errorMessage = null, successMessage = null) }
+        _uiState.update { it.copy(displayName = value, errorMessage = null) }
     }
 
     fun updateEmail(value: String) {
-        _uiState.update { it.copy(email = value, errorMessage = null, successMessage = null) }
+        _uiState.update { it.copy(email = value, errorMessage = null) }
     }
 
     fun updatePassword(value: String) {
-        _uiState.update { it.copy(password = value, errorMessage = null, successMessage = null) }
+        _uiState.update { it.copy(password = value, errorMessage = null) }
     }
 
     fun updateConfirmPassword(value: String) {
-        _uiState.update { it.copy(confirmPassword = value, errorMessage = null, successMessage = null) }
-    }
-
-    fun updateResetCode(value: String) {
-        val digits = value.filter { it.isDigit() }.take(6)
-        _uiState.update { it.copy(resetCode = digits, errorMessage = null, successMessage = null) }
-    }
-
-    fun updateNewPassword(value: String) {
-        _uiState.update { it.copy(newPassword = value, errorMessage = null, successMessage = null) }
-    }
-
-    fun updateConfirmNewPassword(value: String) {
-        _uiState.update { it.copy(confirmNewPassword = value, errorMessage = null, successMessage = null) }
+        _uiState.update { it.copy(confirmPassword = value, errorMessage = null) }
     }
 
     fun login() {
@@ -117,67 +98,6 @@ class AuthViewModel(
                     isLoggedIn = result.isSuccess,
                     errorMessage = result.exceptionOrNull()?.message ?: if (result.isFailure) {
                         "Registrazione non riuscita. Riprova più tardi."
-                    } else {
-                        null
-                    }
-                )
-            }
-        }
-    }
-
-    fun requestPasswordReset() {
-        val state = _uiState.value
-        if (!state.email.isValidEmail()) {
-            _uiState.update { it.copy(errorMessage = "Inserisci un indirizzo email valido.") }
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }
-            val result = authRepository.requestPasswordReset(state.email)
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    isResetCodeSent = result.isSuccess,
-                    errorMessage = result.exceptionOrNull()?.message,
-                    successMessage = if (result.isSuccess) {
-                        "Se l'email è registrata, riceverai un codice a 6 cifre."
-                    } else {
-                        null
-                    }
-                )
-            }
-        }
-    }
-
-    fun resetPassword() {
-        val state = _uiState.value
-        val error = when {
-            !state.email.isValidEmail() -> "Inserisci un indirizzo email valido."
-            state.resetCode.length != 6 -> "Inserisci il codice a 6 cifre."
-            state.newPassword.length < 8 -> "La nuova password deve avere almeno 8 caratteri."
-            state.newPassword != state.confirmNewPassword -> "Le password non coincidono."
-            else -> null
-        }
-        if (error != null) {
-            _uiState.update { it.copy(errorMessage = error) }
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null, successMessage = null) }
-            val result = authRepository.resetPassword(
-                email = state.email,
-                code = state.resetCode,
-                newPassword = state.newPassword
-            )
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    isPasswordResetComplete = result.isSuccess,
-                    errorMessage = result.exceptionOrNull()?.message,
-                    successMessage = if (result.isSuccess) {
-                        "Password aggiornata. Ora puoi accedere."
                     } else {
                         null
                     }
