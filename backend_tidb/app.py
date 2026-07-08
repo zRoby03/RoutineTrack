@@ -124,6 +124,22 @@ def health():
     return jsonify({"status": "ok"})
 
 
+@app.get("/")
+def index():
+    return jsonify(
+        {
+            "name": "RoutineTrack API",
+            "status": "ok",
+            "endpoints": [
+                "/health",
+                "/auth/register",
+                "/auth/login",
+                "/sync/<user_id>",
+            ],
+        }
+    )
+
+
 @app.post("/auth/register")
 def register():
     data = request.get_json(force=True)
