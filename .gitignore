@@ -1,0 +1,14 @@
+.gradle/
+.kotlin/
+build/
+local.properties
+*.iml
+.idea/
+*.db
+*.db-*
+*.log
+backend_tidb/.env
+__pycache__/
+*.pyc
+screen_*.png
+window*.xml

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: routinetrack-backend
+    runtime: python
+    rootDir: backend_tidb
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: TIDB_HOST
+        sync: false
+      - key: TIDB_PORT
+        value: "4000"
+      - key: TIDB_USER
+        sync: false
+      - key: TIDB_PASSWORD
+        sync: false
+      - key: TIDB_DATABASE
+        value: RoutineTrack
+      - key: TIDB_SSL_CA_CONTENT
+        sync: false
+      - key: INIT_SCHEMA_ON_START
+        value: "true"
