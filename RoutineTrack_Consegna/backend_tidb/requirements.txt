@@ -1,6 +1,0 @@
-Flask
-Flask-Cors
-gunicorn
-PyMySQL
-python-dotenv
-Werkzeug

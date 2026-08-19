@@ -60,11 +60,9 @@ class AuthViewModel(
                 it.copy(
                     isLoading = false,
                     isLoggedIn = result.isSuccess,
-                    errorMessage = result.exceptionOrNull()?.message ?: if (result.isFailure) {
-                        "Accesso non riuscito. Controlla i dati e riprova."
-                    } else {
-                        null
-                    }
+                    errorMessage = result.exceptionOrNull()
+                        ?.toAuthMessage("Accesso non riuscito. Controlla i dati e riprova.")
+                        ?: result.failureMessage("Accesso non riuscito. Controlla i dati e riprova.")
                 )
             }
         }
@@ -96,11 +94,9 @@ class AuthViewModel(
                 it.copy(
                     isLoading = false,
                     isLoggedIn = result.isSuccess,
-                    errorMessage = result.exceptionOrNull()?.message ?: if (result.isFailure) {
-                        "Registrazione non riuscita. Riprova più tardi."
-                    } else {
-                        null
-                    }
+                    errorMessage = result.exceptionOrNull()
+                        ?.toAuthMessage("Registrazione non riuscita. Riprova più tardi.")
+                        ?: result.failureMessage("Registrazione non riuscita. Riprova più tardi.")
                 )
             }
         }
@@ -122,4 +118,19 @@ private fun String.isValidEmail(): Boolean {
     val clean = trim()
     val domain = clean.substringAfter("@", missingDelimiterValue = "")
     return clean.contains("@") && "." in domain && clean.length >= 6
+}
+
+private fun Throwable.toAuthMessage(fallback: String): String {
+    val text = message.orEmpty()
+    return when {
+        text.startsWith("Email") -> text
+        text.startsWith("Controlla") -> text
+        text.startsWith("Connessione") -> text
+        text.startsWith("Operazione") -> text
+        else -> fallback
+    }
+}
+
+private fun Result<*>.failureMessage(fallback: String): String? {
+    return if (isFailure) fallback else null
 }

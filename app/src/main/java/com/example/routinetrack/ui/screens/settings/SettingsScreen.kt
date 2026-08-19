@@ -74,21 +74,21 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = state.user?.email ?: "Sign in to sync your routines",
+                        text = state.user?.email ?: "Accedi per sincronizzare le tue routine",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     SmallStatusPill(
-                        text = "${state.counts.activeHabits} habits",
+                        text = habitCountLabel(state.counts.activeHabits),
                         color = MaterialTheme.colorScheme.primaryContainer
                     )
                 }
             }
         }
         item {
-            SettingsGroup(title = "Theme") {
+            SettingsGroup(title = "Tema") {
                 Text(
-                    text = "Scegli l'aspetto globale. L'icona launcher si aggiorna solo con il bottone dedicato.",
+                    text = "Scegli l'aspetto globale dell'app.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -110,15 +110,14 @@ fun SettingsScreen(
                 }
                 PrimaryKhakiButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Aggiorna icona launcher",
+                    text = "Aggiorna icona app",
                     onClick = onLauncherIconApply
                 )
             }
         }
         item {
-            SettingsGroup(title = "Data & Sync") {
-                SettingsRow(title = "Cloud URL", value = state.baseUrl)
-                SettingsRow(title = "Ultima sync", value = state.lastSyncLabel)
+            SettingsGroup(title = "Dati e sincronizzazione") {
+                SettingsRow(title = "Ultima sincronizzazione", value = state.lastSyncLabel)
                 SettingsRow(title = "Elementi da sincronizzare", value = state.counts.unsyncedItems.toString())
                 state.message?.let { message ->
                     Text(
@@ -151,7 +150,7 @@ fun SettingsScreen(
                 onClick = { viewModel.logout(onLoggedOut) }
             ) {
                 Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-                Text("Logout")
+                Text("Esci")
             }
         }
     }
@@ -216,7 +215,11 @@ private fun ThemeIconOption(
             fontWeight = FontWeight.SemiBold
         )
         if (selected) {
-            SmallStatusPill(text = "Selected")
+            SmallStatusPill(text = "Selezionato")
         }
     }
+}
+
+private fun habitCountLabel(count: Int): String {
+    return if (count == 1) "1 abitudine" else "$count abitudini"
 }

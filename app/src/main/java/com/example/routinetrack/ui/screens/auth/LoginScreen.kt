@@ -85,7 +85,7 @@ fun LoginScreen(
             enabled = !state.isLoading,
             onClick = viewModel::login
         ) {
-            Text(if (state.isLoading) "Accesso..." else "Login")
+            Text(if (state.isLoading) "Accesso..." else "Accedi")
         }
         OutlinedButton(
             modifier = Modifier.fillMaxWidth(),

@@ -8,7 +8,6 @@ import com.example.routinetrack.data.repository.StatsRepository
 import com.example.routinetrack.domain.model.Habit
 import com.example.routinetrack.domain.model.HabitCompletion
 import com.example.routinetrack.domain.model.HabitStats
-import java.time.LocalDate
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,7 +18,6 @@ data class HabitDetailUiState(
     val habit: Habit? = null,
     val completions: List<HabitCompletion> = emptyList(),
     val stats: HabitStats = HabitStats(),
-    val todayCompletion: HabitCompletion? = null,
     val isDeleted: Boolean = false,
     val errorMessage: String? = null
 )
@@ -37,8 +35,7 @@ class HabitDetailViewModel(
         HabitDetailUiState(
             habit = habit,
             completions = completions,
-            stats = stats,
-            todayCompletion = completions.firstOrNull { it.date == LocalDate.now().toString() }
+            stats = stats
         )
     }.stateIn(
         scope = viewModelScope,

@@ -27,8 +27,6 @@ import com.example.routinetrack.ui.screens.addhabit.AddHabitViewModel
 import com.example.routinetrack.ui.screens.auth.AuthViewModel
 import com.example.routinetrack.ui.screens.auth.LoginScreen
 import com.example.routinetrack.ui.screens.auth.RegisterScreen
-import com.example.routinetrack.ui.screens.calendar.CalendarScreen
-import com.example.routinetrack.ui.screens.calendar.CalendarViewModel
 import com.example.routinetrack.ui.screens.detail.HabitDetailScreen
 import com.example.routinetrack.ui.screens.detail.HabitDetailViewModel
 import com.example.routinetrack.ui.screens.home.HomeScreen
@@ -174,15 +172,6 @@ fun RoutineTrackNavigation(
                         viewModel = detailViewModel,
                         onBack = { navController.popBackStack() },
                         onEdit = { navController.navigate(Screen.AddHabit.createRoute(it)) }
-                    )
-                }
-                composable(Screen.Calendar.route) {
-                    val calendarViewModel: CalendarViewModel = viewModel(
-                        factory = CalendarViewModel.factory(container.habitRepository)
-                    )
-                    CalendarScreen(
-                        viewModel = calendarViewModel,
-                        onHabitClick = { navController.navigate(Screen.HabitDetail.createRoute(it)) }
                     )
                 }
                 composable(Screen.Stats.route) {

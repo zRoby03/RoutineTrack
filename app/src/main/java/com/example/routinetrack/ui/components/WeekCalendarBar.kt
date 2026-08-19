@@ -21,11 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.routinetrack.ui.theme.KhakiPrimary
-import com.example.routinetrack.ui.theme.KhakiSoft
-import com.example.routinetrack.ui.theme.RoutineSurface
-import com.example.routinetrack.ui.theme.RoutineTextPrimary
-import com.example.routinetrack.ui.theme.RoutineTextSecondary
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -55,24 +50,11 @@ fun WeekCalendarBar(
 }
 
 @Composable
-fun DaySelector(
-    selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    WeekCalendarBar(
-        selectedDate = selectedDate,
-        onDateSelected = onDateSelected,
-        modifier = modifier
-    )
-}
-
-@Composable
 private fun WeekDayChip(
-    modifier: Modifier = Modifier,
     date: LocalDate,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val container = if (selected) MaterialTheme.colorScheme.surface else Color.Transparent
     val borderColor = if (selected) {
@@ -92,8 +74,14 @@ private fun WeekDayChip(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).take(2),
-            color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+            text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ITALIAN)
+                .take(2)
+                .replaceFirstChar { it.uppercase(Locale.ITALIAN) },
+            color = if (selected) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )
@@ -113,7 +101,11 @@ private fun WeekDayChip(
             ) {
                 Text(
                     text = date.dayOfMonth.toString(),
-                    color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )

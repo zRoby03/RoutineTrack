@@ -103,7 +103,7 @@ class AuthRepository(
             this is IOException ->
                 "Connessione non riuscita. Controlla la rete e riprova."
             else ->
-                message ?: "Operazione account non riuscita."
+                "Operazione account non riuscita. Riprova più tardi."
         }
     }
 

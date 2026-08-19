@@ -29,7 +29,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.routinetrack.domain.model.FrequencyMode
+import com.example.routinetrack.domain.model.HabitFrequency
 import com.example.routinetrack.domain.model.HabitType
+import com.example.routinetrack.domain.model.HabitUnit
 import com.example.routinetrack.ui.components.EmptyState
 import com.example.routinetrack.ui.components.ProgressRingCard
 import com.example.routinetrack.ui.components.RoutineTrackCard
@@ -127,14 +130,14 @@ fun HabitDetailScreen(
                     }
                 }
                 SettingsRow(title = "Categoria", value = habit.category.label)
-                SettingsRow(title = "Frequenza", value = habit.frequency.toStorage())
+                SettingsRow(title = "Frequenza", value = frequencyLabel(habit.frequency))
                 SettingsRow(
-                    title = "Target",
+                    title = "Obiettivo",
                     value = targetLabel(habit.type, habit.targetValue, habit.unit)
                 )
-                SettingsRow(title = "Start date", value = formatStoredDate(habit.startDate))
-                SettingsRow(title = "End date", value = habit.endDate?.let(::formatStoredDate) ?: "No end")
-                SettingsRow(title = "Reminder", value = habit.reminderTime ?: "Off")
+                SettingsRow(title = "Data inizio", value = formatStoredDate(habit.startDate))
+                SettingsRow(title = "Data fine", value = habit.endDate?.let(::formatStoredDate) ?: "Nessuna fine")
+                SettingsRow(title = "Promemoria", value = habit.reminderTime ?: "Disattivato")
                 SettingsRow(
                     title = "Colore",
                     trailing = {
@@ -149,25 +152,6 @@ fun HabitDetailScreen(
             }
         }
         item {
-            RoutineTrackCard(cornerRadius = 30.dp) {
-                Text("Oggi", style = MaterialTheme.typography.titleMedium)
-                SettingsRow(
-                    title = "Progress",
-                    value = todayProgressLabel(
-                        type = habit.type,
-                        value = state.todayCompletion?.value ?: 0.0,
-                        completed = state.todayCompletion?.completed == true,
-                        target = habit.targetValue ?: 1.0,
-                        unit = habit.unit
-                    )
-                )
-                SettingsRow(
-                    title = "Status",
-                    value = if (state.todayCompletion?.completed == true) "Completata" else "Da completare"
-                )
-            }
-        }
-        item {
             ProgressRingCard(
                 progressPercent = state.stats.monthlyCompletionRate,
                 bestStreak = state.stats.bestStreak,
@@ -176,10 +160,10 @@ fun HabitDetailScreen(
         }
         item {
             RoutineTrackCard(cornerRadius = 30.dp) {
-                Text("Report", style = MaterialTheme.typography.titleMedium)
+                Text("Riepilogo", style = MaterialTheme.typography.titleMedium)
                 SettingsRow(title = "Totale completamenti", value = state.stats.totalCompletions.toString())
-                SettingsRow(title = "Current streak", value = "${state.stats.currentStreak} giorni")
-                SettingsRow(title = "Best streak", value = "${state.stats.bestStreak} giorni")
+                SettingsRow(title = "Serie attuale", value = "${state.stats.currentStreak} giorni")
+                SettingsRow(title = "Miglior serie", value = "${state.stats.bestStreak} giorni")
             }
         }
         item {
@@ -206,30 +190,33 @@ fun HabitDetailScreen(
 private fun targetLabel(type: HabitType, targetValue: Double?, unit: String?): String {
     if (type != HabitType.NUMERIC) return "1 completamento"
     val target = targetValue ?: 0.0
-    return if (unit == "Tempo") {
+    return if (HabitUnit.fromLabel(unit) == HabitUnit.TIME) {
         secondsToDurationText(target.toInt())
     } else {
-        "${target.cleanNumber()} ${unit.orEmpty()}".trim()
-    }
-}
-
-private fun todayProgressLabel(
-    type: HabitType,
-    value: Double,
-    completed: Boolean,
-    target: Double,
-    unit: String?
-): String {
-    if (type != HabitType.NUMERIC) return if (completed) "1 / 1" else "0 / 1"
-    return if (unit == "Tempo") {
-        "${secondsToDurationText(value.toInt())} / ${secondsToDurationText(target.toInt())}"
-    } else {
-        "${value.cleanNumber()} / ${target.cleanNumber()} ${unit.orEmpty()}".trim()
+        "${target.cleanNumber()} ${HabitUnit.displayLabel(unit)}".trim()
     }
 }
 
 private fun Double.cleanNumber(): String {
     return if (this % 1.0 == 0.0) toInt().toString() else toString()
+}
+
+private fun frequencyLabel(frequency: HabitFrequency): String {
+    if (frequency.mode == FrequencyMode.DAILY) return "Ogni giorno"
+    val labels = mapOf(
+        1 to "L",
+        2 to "M",
+        3 to "M",
+        4 to "G",
+        5 to "V",
+        6 to "S",
+        7 to "D"
+    )
+    return frequency.daysOfWeek
+        .sorted()
+        .mapNotNull { labels[it] }
+        .joinToString(", ")
+        .ifBlank { "Giorni personalizzati" }
 }
 
 private fun secondsToDurationText(totalSeconds: Int): String {

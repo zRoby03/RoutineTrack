@@ -1,14 +1,39 @@
+# Gradle / Android build output
 .gradle/
 .kotlin/
 build/
+app/build/
+*/build/
+
+# Android Studio / local machine files
 local.properties
-*.iml
 .idea/
-*.db
-*.db-*
-*.log
+*.iml
+
+# Backend local environment
+.env
 backend_tidb/.env
-__pycache__/
-*.pyc
-screen_*.png
-window*.xml
+backend_tidb/venv/
+backend_tidb/.venv/
+backend_tidb/__pycache__/
+backend_tidb/*.pyc
+
+# Generated archives and delivery folders
+*.zip
+RoutineTrack_Consegna/
+
+# Test artifacts
+test_screenshots/
+*.db
+
+# Secrets / signing files
+*.jks
+*.keystore
+*.p12
+*.pem
+tidb_ca_runtime.pem
+backend_tidb/tidb_ca_runtime.pem
+
+# OS files
+.DS_Store
+Thumbs.db

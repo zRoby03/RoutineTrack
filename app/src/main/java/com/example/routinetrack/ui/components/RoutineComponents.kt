@@ -215,7 +215,7 @@ fun ProgressRingCard(
     bestStreak: Int,
     perfectDays: Int,
     modifier: Modifier = Modifier,
-    title: String = "Monthly Rate"
+    title: String = "Tasso mensile"
 ) {
     val progress = (progressPercent.coerceIn(0, 100) / 100f)
 
@@ -250,8 +250,8 @@ fun ProgressRingCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            RingMetric(icon = "🏅", value = bestStreak, label = "Best Streaks")
-            RingMetric(icon = "✓", value = perfectDays, label = "Perfect Days")
+            RingMetric(icon = "🏅", value = bestStreak, label = "Miglior serie")
+            RingMetric(icon = "✓", value = perfectDays, label = "Giorni perfetti")
         }
     }
 }
@@ -269,7 +269,7 @@ private fun RingMetric(icon: String, value: Int, label: String) {
             }
         }
         Text(
-            text = if (value == 1) "1 Day" else "$value Days",
+            text = if (value == 1) "1 giorno" else "$value giorni",
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )

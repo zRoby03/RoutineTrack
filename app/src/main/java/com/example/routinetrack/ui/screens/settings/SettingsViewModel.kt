@@ -3,7 +3,6 @@ package com.example.routinetrack.ui.screens.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.routinetrack.data.remote.RetrofitClient
 import com.example.routinetrack.data.repository.AuthRepository
 import com.example.routinetrack.data.repository.HabitRepository
 import com.example.routinetrack.data.repository.LocalDataCounts
@@ -25,7 +24,6 @@ data class SettingsUiState(
     val counts: LocalDataCounts = LocalDataCounts(),
     val isSyncing: Boolean = false,
     val message: String? = null,
-    val baseUrl: String = RetrofitClient.DEFAULT_BASE_URL,
     val lastSyncLabel: String = "Mai"
 )
 

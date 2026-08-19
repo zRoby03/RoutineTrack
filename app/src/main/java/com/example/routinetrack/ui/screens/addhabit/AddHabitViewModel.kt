@@ -24,9 +24,12 @@ data class AddHabitUiState(
     val title: String = "",
     val description: String = "",
     val category: HabitCategory = HabitCategory.HEALTH,
-    val color: String = "#FADADD",
+    val color: String = "#C8B88A",
     val type: HabitType = HabitType.BOOLEAN,
     val targetValue: String = "1",
+    val targetHours: Int = 0,
+    val targetMinutes: Int = 30,
+    val targetSeconds: Int = 0,
     val unit: HabitUnit = HabitUnit.TIMES,
     val frequencyMode: FrequencyMode = FrequencyMode.DAILY,
     val selectedDays: Set<Int> = HabitFrequency.allDays,
@@ -56,6 +59,10 @@ class AddHabitViewModel(
                     if (habit != null && !loaded) {
                         originalHabit = habit
                         loaded = true
+                        val loadedUnit = HabitUnit.fromLabel(habit.unit)
+                        val loadedTimeParts = secondsToTimeParts(
+                            habit.targetValue?.toInt()?.takeIf { it > 0 } ?: DEFAULT_TIME_TARGET_SECONDS
+                        )
                         _uiState.update {
                             it.copy(
                                 title = habit.title,
@@ -63,12 +70,15 @@ class AddHabitViewModel(
                                 category = habit.category,
                                 color = habit.color,
                                 type = habit.type,
-                                unit = HabitUnit.fromLabel(habit.unit),
-                                targetValue = if (HabitUnit.fromLabel(habit.unit) == HabitUnit.TIME) {
-                                    secondsToDurationText(habit.targetValue?.toInt() ?: 0)
+                                unit = loadedUnit,
+                                targetValue = if (loadedUnit == HabitUnit.TIME) {
+                                    "1"
                                 } else {
                                     habit.targetValue?.toInt()?.toString().orEmpty()
                                 },
+                                targetHours = loadedTimeParts.hours,
+                                targetMinutes = loadedTimeParts.minutes,
+                                targetSeconds = loadedTimeParts.seconds,
                                 frequencyMode = habit.frequency.mode,
                                 selectedDays = habit.frequency.daysOfWeek,
                                 reminderEnabled = habit.reminderEnabled,
@@ -95,27 +105,41 @@ class AddHabitViewModel(
     fun updateType(value: HabitType) = _uiState.update { it.copy(type = value, errorMessage = null) }
     fun updateTargetValue(value: String) {
         _uiState.update { state ->
-            val cleaned = if (state.unit == HabitUnit.TIME) {
-                value.filter { it.isDigit() || it == ':' }.take(8)
-            } else {
-                value.filter { char -> char.isDigit() }
-            }
+            val cleaned = value.filter { char -> char.isDigit() }.take(9)
             state.copy(targetValue = cleaned, errorMessage = null)
         }
     }
     fun updateUnit(value: HabitUnit) {
         _uiState.update { state ->
+            val currentTarget = state.targetValue.toIntOrNull()?.takeIf { it > 0 }
+            val timeParts = secondsToTimeParts(currentTarget ?: DEFAULT_TIME_TARGET_SECONDS)
             state.copy(
                 unit = value,
                 type = HabitType.NUMERIC,
                 targetValue = if (value == HabitUnit.TIME) {
-                    state.targetValue.takeIf { isValidDurationText(it) } ?: "00:30:00"
+                    "1"
                 } else {
-                    state.targetValue.toIntOrNull()?.takeIf { it > 0 }?.toString() ?: "1"
+                    if (state.unit == HabitUnit.TIME) {
+                        "1"
+                    } else {
+                        currentTarget?.toString() ?: "1"
+                    }
                 },
+                targetHours = if (value == HabitUnit.TIME) timeParts.hours else state.targetHours,
+                targetMinutes = if (value == HabitUnit.TIME) timeParts.minutes else state.targetMinutes,
+                targetSeconds = if (value == HabitUnit.TIME) timeParts.seconds else state.targetSeconds,
                 errorMessage = null
             )
         }
+    }
+    fun updateTargetHours(value: Int) = _uiState.update {
+        it.copy(targetHours = value.coerceIn(0, 99), errorMessage = null)
+    }
+    fun updateTargetMinutes(value: Int) = _uiState.update {
+        it.copy(targetMinutes = value.coerceIn(0, 59), errorMessage = null)
+    }
+    fun updateTargetSeconds(value: Int) = _uiState.update {
+        it.copy(targetSeconds = value.coerceIn(0, 59), errorMessage = null)
     }
     fun updateReminderEnabled(value: Boolean) = _uiState.update { it.copy(reminderEnabled = value) }
     fun updateReminderHour(value: Int) = _uiState.update { it.copy(reminderHour = value.coerceIn(0, 23), errorMessage = null) }
@@ -149,17 +173,17 @@ class AddHabitViewModel(
     fun saveHabit() {
         val state = _uiState.value
         val target = if (state.unit == HabitUnit.TIME) {
-            durationTextToSeconds(state.targetValue)?.toDouble()
+            state.timeTargetSeconds().toDouble()
         } else {
             state.targetValue.toDoubleOrNull()
         }
 
         val error = when {
             state.title.isBlank() -> "Il titolo è obbligatorio"
-            state.type == HabitType.NUMERIC && (target == null || target <= 0.0) ->
-                "Per una habit numerica serve un target maggiore di 0"
-            state.unit == HabitUnit.TIME && !isValidDurationText(state.targetValue) ->
-                "Inserisci una durata valida in formato hh:mm:ss"
+            state.type == HabitType.NUMERIC && state.unit == HabitUnit.TIME && state.timeTargetSeconds() <= 0 ->
+                "Il tempo deve essere maggiore di zero"
+            state.type == HabitType.NUMERIC && state.unit != HabitUnit.TIME && (target == null || target <= 0.0) ->
+                "Inserisci un obiettivo valido"
             state.frequencyMode == FrequencyMode.SPECIFIC_DAYS && state.selectedDays.isEmpty() ->
                 "Scegli almeno un giorno"
             state.endDate != null && state.endDate.isBefore(state.startDate) ->
@@ -209,7 +233,7 @@ class AddHabitViewModel(
                     isSaving = false,
                     savedHabitId = result.getOrNull(),
                     errorMessage = if (result.isFailure) {
-                        result.exceptionOrNull()?.message ?: "Salvataggio non riuscito"
+                        result.exceptionOrNull()?.toSaveMessage() ?: "Salvataggio non riuscito. Riprova."
                     } else {
                         null
                     }
@@ -235,6 +259,14 @@ class AddHabitViewModel(
 
 private fun Int.twoDigits(): String = toString().padStart(2, '0')
 
+private const val DEFAULT_TIME_TARGET_SECONDS = 30 * 60
+
+private data class TimeParts(
+    val hours: Int,
+    val minutes: Int,
+    val seconds: Int
+)
+
 private fun parseDateOrNull(value: String): LocalDate? {
     return runCatching { LocalDate.parse(value) }.getOrNull()
 }
@@ -246,25 +278,26 @@ private fun parseDateOrDefault(value: String, createdAt: Long): LocalDate {
             .toLocalDate()
 }
 
-private fun isValidDurationText(value: String): Boolean {
-    return durationTextToSeconds(value) != null
+private fun AddHabitUiState.timeTargetSeconds(): Int {
+    return targetHours.coerceAtLeast(0) * 3600 +
+        targetMinutes.coerceIn(0, 59) * 60 +
+        targetSeconds.coerceIn(0, 59)
 }
 
-private fun durationTextToSeconds(value: String): Int? {
-    val parts = value.split(":")
-    if (parts.size != 3) return null
-    val hours = parts[0].toIntOrNull() ?: return null
-    val minutes = parts[1].toIntOrNull() ?: return null
-    val seconds = parts[2].toIntOrNull() ?: return null
-    if (hours !in 0..99 || minutes !in 0..59 || seconds !in 0..59) return null
-    val total = hours * 3600 + minutes * 60 + seconds
-    return total.takeIf { it > 0 }
-}
-
-private fun secondsToDurationText(totalSeconds: Int): String {
+private fun secondsToTimeParts(totalSeconds: Int): TimeParts {
     val safeSeconds = totalSeconds.coerceAtLeast(0)
-    val hours = safeSeconds / 3600
-    val minutes = (safeSeconds % 3600) / 60
-    val seconds = safeSeconds % 60
-    return "${hours.twoDigits()}:${minutes.twoDigits()}:${seconds.twoDigits()}"
+    return TimeParts(
+        hours = safeSeconds / 3600,
+        minutes = (safeSeconds % 3600) / 60,
+        seconds = safeSeconds % 60
+    )
+}
+
+private fun Throwable.toSaveMessage(): String {
+    return when (message) {
+        "Effettua il login prima di modificare le routine." ->
+            "Accedi prima di salvare una routine."
+        else ->
+            "Salvataggio non riuscito. Riprova."
+    }
 }

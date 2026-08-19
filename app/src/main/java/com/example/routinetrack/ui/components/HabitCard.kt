@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.routinetrack.domain.model.Habit
 import com.example.routinetrack.domain.model.HabitType
+import com.example.routinetrack.domain.model.HabitUnit
 import com.example.routinetrack.ui.theme.KhakiPrimary
 import com.example.routinetrack.ui.theme.KhakiSoft
 import com.example.routinetrack.ui.theme.RoutineSurface
@@ -230,53 +230,16 @@ fun HabitCard(
 }
 
 @Composable
-fun CompactHabitCard(
-    title: String,
-    subtitle: String,
-    color: String,
-    onClick: () -> Unit
-) {
-    RoutineTrackCard(
-        modifier = Modifier.clickable(onClick = onClick),
-        containerColor = MaterialTheme.colorScheme.surface,
-        cornerRadius = 24.dp
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = title.take(1).uppercase(), fontWeight = FontWeight.Bold)
-            }
-            Spacer(modifier = Modifier.size(12.dp))
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
 private fun progressLabel(habit: Habit, progressValue: Double, completed: Boolean): String {
     return when (habit.type) {
         HabitType.BOOLEAN -> if (completed) "1/1" else "0/1"
         HabitType.NUMERIC -> {
             val target = habit.targetValue ?: 0.0
-            if (habit.unit == "Tempo") {
+            if (HabitUnit.fromLabel(habit.unit) == HabitUnit.TIME) {
                 return "${secondsToDurationText(progressValue.toInt())}/${secondsToDurationText(target.toInt())}"
             }
-            val unit = habit.unit.orEmpty().takeIf { it.isNotBlank() && it != "volte" }
+            val unit = HabitUnit.displayLabel(habit.unit)
+                .takeIf { it.isNotBlank() && !it.equals(HabitUnit.TIMES.label, ignoreCase = true) }
                 ?.let { " $it" }
                 .orEmpty()
             "${progressValue.cleanNumber()}/${target.cleanNumber()}$unit"
@@ -285,7 +248,7 @@ private fun progressLabel(habit: Habit, progressValue: Double, completed: Boolea
 }
 
 private fun streakLabel(value: Int): String {
-    return if (value == 1) "1 Day" else "$value Days"
+    return if (value == 1) "1 giorno" else "$value giorni"
 }
 
 private fun Double.cleanNumber(): String {

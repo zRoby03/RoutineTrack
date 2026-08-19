@@ -65,7 +65,7 @@ fun StatsScreen(viewModel: StatsViewModel) {
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = state.selectedCategory?.label ?: "Overall",
+                    text = state.selectedCategory?.label ?: "Generale",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold
@@ -81,7 +81,7 @@ fun StatsScreen(viewModel: StatsViewModel) {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 item {
                     CategoryChip(
-                        label = "All",
+                        label = "Tutte",
                         icon = "★",
                         selected = state.selectedCategory == null,
                         onClick = { viewModel.selectCategory(null) }
@@ -101,7 +101,7 @@ fun StatsScreen(viewModel: StatsViewModel) {
             item {
                 EmptyState(
                     title = "Statistiche non disponibili",
-                    message = "Completa qualche abitudine per generare report."
+                    message = "Completa qualche abitudine per generare un riepilogo."
                 )
             }
         }
@@ -118,7 +118,7 @@ fun StatsScreen(viewModel: StatsViewModel) {
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "${stats.totalCompletions} done",
+                        text = completionCountLabel(stats.totalCompletions),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -145,24 +145,24 @@ fun StatsScreen(viewModel: StatsViewModel) {
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     cornerRadius = 26.dp
                 ) {
-                    Text("Weekly", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Settimana", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("${stats.weeklyCompletionRate}%", style = MaterialTheme.typography.headlineSmall)
-                    Text("completion rate", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("tasso completamento", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 RoutineTrackCard(
                     modifier = Modifier.weight(1f),
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     cornerRadius = 26.dp
                 ) {
-                    Text("Current", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Serie attuale", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("${stats.currentStreak}", style = MaterialTheme.typography.headlineSmall)
-                    Text("streak days", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("giorni consecutivi", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
         item {
             RoutineTrackCard(cornerRadius = 30.dp) {
-                Text("Report", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                Text("Riepilogo", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                 SettingsRow(title = "Più costante", value = stats.mostCompletedHabit ?: "-")
                 SettingsRow(title = "Da recuperare", value = stats.leastCompletedHabit ?: "-")
                 SettingsRow(title = "Giorno migliore", value = stats.bestDayName ?: "-")
@@ -173,4 +173,8 @@ fun StatsScreen(viewModel: StatsViewModel) {
 
 private fun monthLabel(month: YearMonth): String {
     return "${month.monthValue.toString().padStart(2, '0')}/${month.year}"
+}
+
+private fun completionCountLabel(count: Int): String {
+    return if (count == 1) "1 completamento" else "$count completamenti"
 }

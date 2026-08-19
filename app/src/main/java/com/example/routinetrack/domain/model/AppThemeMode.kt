@@ -1,8 +1,8 @@
 package com.example.routinetrack.domain.model
 
 enum class AppThemeMode(val storageValue: String, val label: String) {
-    LIGHT("light", "Light Theme"),
-    DARK("dark", "Dark Theme");
+    LIGHT("light", "Tema chiaro"),
+    DARK("dark", "Tema scuro");
 
     companion object {
         fun fromStorage(value: String?): AppThemeMode {

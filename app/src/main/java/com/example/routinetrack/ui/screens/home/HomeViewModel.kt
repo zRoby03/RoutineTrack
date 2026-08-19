@@ -114,7 +114,7 @@ class HomeViewModel(
                 value = value,
                 completed = completed
             )
-            transientError.value = result.exceptionOrNull()?.message
+            transientError.value = result.exceptionOrNull()?.toHomeMessage()
         }
     }
 
@@ -143,5 +143,14 @@ class HomeViewModel(
                 }
             }
         }
+    }
+}
+
+private fun Throwable.toHomeMessage(): String {
+    return when (message) {
+        "Effettua il login prima di modificare le routine." ->
+            "Accedi prima di aggiornare le routine."
+        else ->
+            "Aggiornamento non riuscito. Riprova."
     }
 }

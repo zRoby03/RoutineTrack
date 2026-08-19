@@ -2,9 +2,9 @@ package com.example.routinetrack.domain.model
 
 enum class HabitCategory(val label: String, val icon: String) {
     HEALTH("Salute", "favorite"),
-    FITNESS("Fitness", "fitness"),
+    FITNESS("Allenamento", "fitness"),
     STUDY("Studio", "school"),
-    MINDFULNESS("Mindfulness", "spa"),
+    MINDFULNESS("Mente", "spa"),
     WATER("Acqua", "water"),
     OTHER("Altro", "star")
 }

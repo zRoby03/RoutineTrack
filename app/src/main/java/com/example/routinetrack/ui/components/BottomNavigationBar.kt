@@ -23,9 +23,9 @@ import com.example.routinetrack.navigation.Screen
 @Composable
 fun RoutineBottomBar(navController: NavHostController) {
     val items = listOf(
-        NavigationItem(Screen.Home.route, "Home", Icons.Default.Home),
-        NavigationItem(Screen.AddHabit.baseRoute, "Add Habit", Icons.Default.AddCircle),
-        NavigationItem(Screen.Stats.route, "Stats", Icons.Default.BarChart),
+        NavigationItem(Screen.Home.route, "Oggi", Icons.Default.Home),
+        NavigationItem(Screen.AddHabit.baseRoute, "Aggiungi abitudine", Icons.Default.AddCircle),
+        NavigationItem(Screen.Stats.route, "Statistiche", Icons.Default.BarChart),
         NavigationItem(Screen.Settings.route, "Account", Icons.Default.Settings)
     )
     val backStackEntry by navController.currentBackStackEntryAsState()

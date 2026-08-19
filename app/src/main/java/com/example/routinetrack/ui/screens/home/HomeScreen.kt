@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.routinetrack.domain.model.HabitType
+import com.example.routinetrack.domain.model.HabitUnit
 import com.example.routinetrack.ui.components.EmptyState
 import com.example.routinetrack.ui.components.RoutineHabitCard
 import com.example.routinetrack.ui.components.WeekCalendarBar
@@ -76,7 +77,7 @@ fun HomeScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Today",
+                    text = "Oggi",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Bold
@@ -133,8 +134,8 @@ private fun ManualProgressDialog(
     onDismiss: () -> Unit,
     onConfirm: (Double) -> Unit
 ) {
-    val unit = item.habit.unit.orEmpty()
-    val isTime = unit == "Tempo"
+    val unit = HabitUnit.displayLabel(item.habit.unit)
+    val isTime = HabitUnit.fromLabel(item.habit.unit) == HabitUnit.TIME
     val target = item.habit.targetValue ?: 1.0
 
     if (item.habit.type != HabitType.NUMERIC) return
@@ -177,7 +178,7 @@ private fun NumberProgressDialogContent(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "Target: $targetValue $cleanedUnit",
+                    text = "Obiettivo: $targetValue $cleanedUnit",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -238,7 +239,7 @@ private fun TimeProgressDialogContent(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "Target: ${formatDuration(targetSeconds)}",
+                    text = "Obiettivo: ${formatDuration(targetSeconds)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

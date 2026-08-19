@@ -17,7 +17,7 @@ import com.example.routinetrack.MainActivity
 
 object NotificationHelper {
     const val HABIT_REMINDER_CHANNEL_ID = "habit_reminders"
-    private const val CHANNEL_NAME = "Habit reminders"
+    private const val CHANNEL_NAME = "Promemoria abitudini"
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -26,7 +26,7 @@ object NotificationHelper {
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Daily reminders for RoutineTrack habits"
+                description = "Promemoria giornalieri per le abitudini di RoutineTrack"
             }
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

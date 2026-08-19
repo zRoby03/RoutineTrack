@@ -8,6 +8,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -42,6 +44,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -88,7 +91,11 @@ private val habitColors = listOf(
     "#D7B37A",
     "#EDE3C7",
     "#A8B59D",
-    "#CC9F7A"
+    "#CC9F7A",
+    "#B7A6D8",
+    "#8FA9B8",
+    "#E5B86B",
+    "#D99A8A"
 )
 private val dayLabels = listOf(1 to "L", 2 to "M", 3 to "M", 4 to "G", 5 to "V", 6 to "S", 7 to "D")
 private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ITALIAN)
@@ -124,7 +131,7 @@ fun AddHabitScreen(
     if (showNotificationDialog) {
         AlertDialog(
             onDismissRequest = { showNotificationDialog = false },
-            title = { Text("Notifiche reminder") },
+            title = { Text("Notifiche promemoria") },
             text = { Text("Accetta le notifiche per ricevere i promemoria delle tue routine.") },
             confirmButton = {
                 Button(
@@ -167,7 +174,7 @@ fun AddHabitScreen(
     ) {
         item {
             HabitTopBar(
-                title = if (state.editingHabitId == null) "New Habit" else "Edit Habit",
+                title = if (state.editingHabitId == null) "Nuova abitudine" else "Modifica abitudine",
                 emoji = state.category.routineEmoji(),
                 onBackClick = onBackClick
             )
@@ -197,7 +204,7 @@ fun AddHabitScreen(
                         modifier = Modifier.weight(1f),
                         value = state.title,
                         onValueChange = viewModel::updateTitle,
-                        label = { Text("Habit name") },
+                        label = { Text("Nome abitudine") },
                         singleLine = true
                     )
                 }
@@ -205,7 +212,7 @@ fun AddHabitScreen(
                     modifier = Modifier.fillMaxWidth(),
                     value = state.description,
                     onValueChange = viewModel::updateDescription,
-                    label = { Text("Description (optional)") },
+                    label = { Text("Descrizione (opzionale)") },
                     minLines = 2
                 )
             }
@@ -213,7 +220,7 @@ fun AddHabitScreen(
 
         item {
             RoutineTrackCard(cornerRadius = 30.dp) {
-                Text("Category", style = MaterialTheme.typography.titleMedium)
+                Text("Categoria", style = MaterialTheme.typography.titleMedium)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(HabitCategory.entries) { category ->
                         CategoryChip(
@@ -224,8 +231,15 @@ fun AddHabitScreen(
                         )
                     }
                 }
-                Text("Color", style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Colore", style = MaterialTheme.typography.titleMedium)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     habitColors.forEach { color ->
                         ColorCircle(
                             color = colorFromHex(color),
@@ -239,15 +253,15 @@ fun AddHabitScreen(
 
         item {
             RoutineTrackCard(cornerRadius = 30.dp) {
-                Text("Daily goal", style = MaterialTheme.typography.titleMedium)
+                Text("Obiettivo giornaliero", style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CategoryChip(
-                        label = "1 check",
+                        label = "1 completamento",
                         selected = state.type == HabitType.BOOLEAN,
                         onClick = { viewModel.updateType(HabitType.BOOLEAN) }
                     )
                     CategoryChip(
-                        label = "Counter",
+                        label = "Contatore",
                         selected = state.type == HabitType.NUMERIC,
                         onClick = { viewModel.updateType(HabitType.NUMERIC) }
                     )
@@ -257,40 +271,41 @@ fun AddHabitScreen(
                         selected = state.unit,
                         onSelected = viewModel::updateUnit
                     )
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = state.targetValue,
-                        onValueChange = viewModel::updateTargetValue,
-                        label = {
-                            Text(if (state.unit == HabitUnit.TIME) "Goal value hh:mm:ss" else "Goal value")
-                        },
-                        placeholder = {
-                            Text(if (state.unit == HabitUnit.TIME) "00:30:00" else "5")
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = if (state.unit == HabitUnit.TIME) {
-                                KeyboardType.Text
-                            } else {
-                                KeyboardType.Number
-                            }
-                        ),
-                        singleLine = true
-                    )
+                    if (state.unit == HabitUnit.TIME) {
+                        GoalTimePicker(
+                            hours = state.targetHours,
+                            minutes = state.targetMinutes,
+                            seconds = state.targetSeconds,
+                            onHoursSelected = viewModel::updateTargetHours,
+                            onMinutesSelected = viewModel::updateTargetMinutes,
+                            onSecondsSelected = viewModel::updateTargetSeconds
+                        )
+                    } else {
+                        OutlinedTextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = state.targetValue,
+                            onValueChange = viewModel::updateTargetValue,
+                            label = { Text("Valore obiettivo") },
+                            placeholder = { Text("5") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true
+                        )
+                    }
                 }
             }
         }
 
         item {
             RoutineTrackCard(cornerRadius = 30.dp) {
-                Text("Active days", style = MaterialTheme.typography.titleMedium)
+                Text("Giorni attivi", style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CategoryChip(
-                        label = "Every day",
+                        label = "Ogni giorno",
                         selected = state.frequencyMode == FrequencyMode.DAILY,
                         onClick = { viewModel.updateFrequencyMode(FrequencyMode.DAILY) }
                     )
                     CategoryChip(
-                        label = "Custom",
+                        label = "Personalizzati",
                         selected = state.frequencyMode == FrequencyMode.SPECIFIC_DAYS,
                         onClick = { viewModel.updateFrequencyMode(FrequencyMode.SPECIFIC_DAYS) }
                     )
@@ -314,16 +329,16 @@ fun AddHabitScreen(
 
         item {
             RoutineTrackCard(cornerRadius = 30.dp) {
-                Text("Habit term", style = MaterialTheme.typography.titleMedium)
+                Text("Periodo abitudine", style = MaterialTheme.typography.titleMedium)
                 DateRow(
-                    title = "Start date",
+                    title = "Data inizio",
                     value = state.startDate.format(dateFormatter),
                     initialDate = state.startDate,
                     onDateSelected = viewModel::updateStartDate
                 )
                 DateRow(
-                    title = "End date",
-                    value = state.endDate?.format(dateFormatter) ?: "No end",
+                    title = "Data fine",
+                    value = state.endDate?.format(dateFormatter) ?: "Nessuna fine",
                     initialDate = state.endDate ?: state.startDate,
                     onDateSelected = { viewModel.updateEndDate(it) }
                 )
@@ -332,7 +347,7 @@ fun AddHabitScreen(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { viewModel.updateEndDate(null) }
                     ) {
-                        Text("No end")
+                        Text("Nessuna fine")
                     }
                 }
             }
@@ -341,7 +356,7 @@ fun AddHabitScreen(
         item {
             RoutineTrackCard(cornerRadius = 30.dp) {
                 SettingsRow(
-                    title = "Reminder",
+                    title = "Promemoria",
                     trailing = {
                         RoutineSwitch(
                             checked = state.reminderEnabled,
@@ -371,7 +386,7 @@ fun AddHabitScreen(
                     ) {
                         TimeNumberDropdown(
                             modifier = Modifier.weight(1f),
-                            label = "Hour",
+                            label = "Ora",
                             selected = state.reminderHour,
                             values = 0..23,
                             onSelected = viewModel::updateReminderHour
@@ -379,7 +394,7 @@ fun AddHabitScreen(
                         Text(":", style = MaterialTheme.typography.titleLarge)
                         TimeNumberDropdown(
                             modifier = Modifier.weight(1f),
-                            label = "Minute",
+                            label = "Minuto",
                             selected = state.reminderMinute,
                             values = 0..59,
                             onSelected = viewModel::updateReminderMinute
@@ -406,13 +421,58 @@ fun AddHabitScreen(
             PrimaryKhakiButton(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !state.isSaving,
-                text = if (state.isSaving) "Saving..." else "Save",
+                text = if (state.isSaving) "Salvataggio..." else "Salva",
                 onClick = viewModel::saveHabit,
                 leadingIcon = {
                     Icon(Icons.Default.Check, contentDescription = null)
                 }
             )
         }
+    }
+}
+
+@Composable
+private fun GoalTimePicker(
+    hours: Int,
+    minutes: Int,
+    seconds: Int,
+    onHoursSelected: (Int) -> Unit,
+    onMinutesSelected: (Int) -> Unit,
+    onSecondsSelected: (Int) -> Unit
+) {
+    Text(
+        text = "Tempo obiettivo ${formatTime(hours, minutes, seconds)}",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        TimeNumberDropdown(
+            modifier = Modifier.weight(1f),
+            label = "Ore",
+            selected = hours,
+            values = 0..99,
+            onSelected = onHoursSelected
+        )
+        Text(":", style = MaterialTheme.typography.titleLarge)
+        TimeNumberDropdown(
+            modifier = Modifier.weight(1f),
+            label = "Min",
+            selected = minutes,
+            values = 0..59,
+            onSelected = onMinutesSelected
+        )
+        Text(":", style = MaterialTheme.typography.titleLarge)
+        TimeNumberDropdown(
+            modifier = Modifier.weight(1f),
+            label = "Sec",
+            selected = seconds,
+            values = 0..59,
+            onSelected = onSecondsSelected
+        )
     }
 }
 
@@ -466,7 +526,7 @@ private fun RoutineDatePickerDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Annulla")
             }
         }
     ) {
@@ -521,17 +581,28 @@ private fun ColorCircle(
 ) {
     Box(
         modifier = Modifier
-            .size(40.dp)
+            .size(42.dp)
             .clip(CircleShape)
             .border(
                 width = if (selected) 3.dp else 1.dp,
-                color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
+                },
                 shape = CircleShape
             )
             .padding(4.dp)
-            .background(color, CircleShape)
-            .clickable(onClick = onClick)
-    )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(color)
+        )
+    }
 }
 
 @Composable
@@ -568,11 +639,11 @@ private fun HabitUnitDropdown(
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable),
             value = selected.label,
             onValueChange = { },
             readOnly = true,
-            label = { Text("Unit") },
+            label = { Text("Unità") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             singleLine = true
         )
@@ -611,7 +682,7 @@ private fun TimeNumberDropdown(
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable),
             value = selected.twoDigits(),
             onValueChange = { },
             readOnly = true,
@@ -656,6 +727,10 @@ private fun colorFromHex(hex: String): Color {
 }
 
 private fun Int.twoDigits(): String = toString().padStart(2, '0')
+
+private fun formatTime(hours: Int, minutes: Int, seconds: Int): String {
+    return "${hours.twoDigits()}:${minutes.twoDigits()}:${seconds.twoDigits()}"
+}
 
 private fun LocalDate.toEpochMillis(): Long {
     return atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
