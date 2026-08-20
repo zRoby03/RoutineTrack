@@ -23,7 +23,6 @@ class HabitRepository(
     private val userDao: UserDao,
     private val reminderScheduler: ReminderScheduler
 ) {
-    // Repository: nasconde Room ai ViewModel e applica sempre il filtro per utente loggato.
     fun observeHabits(): Flow<List<Habit>> {
         return userDao.getLoggedUser().flatMapLatest { user ->
             val userId = user?.remoteId ?: return@flatMapLatest flowOf(emptyList())

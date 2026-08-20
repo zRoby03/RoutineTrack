@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HabitDao {
-    // DAO = Data Access Object: qui vivono le query sulla tabella habits.
-    // Flow permette alla UI di ricevere automaticamente gli aggiornamenti del database.
     @Query("SELECT * FROM habits WHERE user_id = :userId AND is_deleted = 0 ORDER BY created_at DESC")
     fun observeHabitsForUser(userId: String): Flow<List<HabitEntity>>
 

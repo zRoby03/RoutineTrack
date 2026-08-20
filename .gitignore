@@ -12,11 +12,12 @@ local.properties
 
 # Backend local environment
 .env
+__pycache__/
+*.pyc
 backend_tidb/.env
 backend_tidb/venv/
 backend_tidb/.venv/
 backend_tidb/__pycache__/
-backend_tidb/*.pyc
 
 # Generated archives and delivery folders
 *.zip

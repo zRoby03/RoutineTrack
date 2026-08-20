@@ -71,7 +71,6 @@ fun RoutineTrackNavigation(
         }
     }
 
-    // Scaffold contiene gli elementi comuni: bottom bar, FAB e area delle schermate.
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {

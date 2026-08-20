@@ -1,6 +1,5 @@
 package com.example.routinetrack.navigation
 
-// Le route sono centralizzate qui per evitare stringhe sparse nel codice.
 sealed class Screen(val route: String, val title: String) {
     object Login : Screen("login", "Accedi")
     object Register : Screen("register", "Registrati")

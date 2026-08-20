@@ -27,7 +27,6 @@ object RetrofitClient {
             .add(KotlinJsonAdapterFactory())
             .build()
 
-        // Retrofit isola la comunicazione HTTP: repository e UI non costruiscono mai request raw.
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(client)

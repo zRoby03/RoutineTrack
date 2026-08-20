@@ -21,7 +21,6 @@ import com.example.routinetrack.data.local.entity.UserEntity
     exportSchema = false
 )
 abstract class RoutineTrackDatabase : RoomDatabase() {
-    // Ogni DAO espone le query per una tabella specifica: la UI non accede mai qui direttamente.
     abstract fun habitDao(): HabitDao
     abstract fun habitCompletionDao(): HabitCompletionDao
     abstract fun userDao(): UserDao
@@ -37,9 +36,6 @@ abstract class RoutineTrackDatabase : RoomDatabase() {
                     RoutineTrackDatabase::class.java,
                     "routine_track.db"
                 )
-                    // Singleton thread-safe: evita di aprire più connessioni Room alla stessa base dati.
-                    // In un progetto universitario iniziale consente di iterare sullo schema.
-                    // In produzione servirebbero migration esplicite.
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                     .also { INSTANCE = it }
