@@ -4,6 +4,7 @@ services:
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
+    healthCheckPath: /health
     envVars:
       - key: TIDB_HOST
         sync: false
@@ -17,5 +18,11 @@ services:
         value: RoutineTrack
       - key: TIDB_SSL_CA_CONTENT
         sync: false
+      - key: APP_SECRET_KEY
+        generateValue: true
+      - key: TOKEN_MAX_AGE_SECONDS
+        value: "2592000"
+      - key: CORS_ORIGINS
+        value: ""
       - key: INIT_SCHEMA_ON_START
         value: "true"

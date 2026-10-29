@@ -13,8 +13,15 @@ local.properties
 
 # Backend local environment
 .env
+.env.*
+!.env.example
+!**/.env.example
 __pycache__/
 *.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
 backend_tidb/.env
 backend_tidb/venv/
 backend_tidb/.venv/
@@ -23,6 +30,7 @@ backend_tidb/__pycache__/
 # Generated archives and delivery folders
 *.zip
 RoutineTrack_Consegna/
+PIANO_STUDIO_4_GIORNI*
 
 # Test artifacts
 test_screenshots/

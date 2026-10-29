@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import os
+import re
 import time
 import uuid
 from pathlib import Path
@@ -10,6 +11,7 @@ import pymysql
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
@@ -19,7 +21,27 @@ SCHEMA_PATH = BASE_DIR / "schema.sql"
 load_dotenv(BASE_DIR / ".env")
 
 app = Flask(__name__)
-CORS(app)
+app.config["MAX_CONTENT_LENGTH"] = int(os.getenv("MAX_REQUEST_BYTES", "1048576"))
+
+APP_SECRET_KEY = os.getenv("APP_SECRET_KEY")
+if not APP_SECRET_KEY:
+    raise RuntimeError("APP_SECRET_KEY is required. Set it in the environment before starting the API.")
+
+TOKEN_SALT = "routinetrack-auth-v1"
+TOKEN_MAX_AGE_SECONDS = int(os.getenv("TOKEN_MAX_AGE_SECONDS", "2592000"))
+
+cors_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()]
+if cors_origins:
+    CORS(app, resources={r"/*": {"origins": cors_origins}})
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault("Cache-Control", "no-store")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    return response
 
 
 def now_ms() -> int:
@@ -33,6 +55,32 @@ def normalize_email(value: str | None) -> str:
 def json_body() -> dict[str, Any]:
     data = request.get_json(silent=True)
     return data if isinstance(data, dict) else {}
+
+
+def token_serializer() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(APP_SECRET_KEY, salt=TOKEN_SALT)
+
+
+def issue_token(user_id: str) -> str:
+    return token_serializer().dumps({"user_id": user_id})
+
+
+def authorize_user(expected_user_id: str):
+    authorization = request.headers.get("Authorization", "")
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        return jsonify({"error": "authentication required"}), 401
+
+    try:
+        payload = token_serializer().loads(token, max_age=TOKEN_MAX_AGE_SECONDS)
+    except SignatureExpired:
+        return jsonify({"error": "session expired"}), 401
+    except BadSignature:
+        return jsonify({"error": "invalid session"}), 401
+
+    if payload.get("user_id") != expected_user_id:
+        return jsonify({"error": "forbidden"}), 403
+    return None
 
 
 def connection(database: str | None = None) -> pymysql.connections.Connection:
@@ -50,6 +98,13 @@ def connection(database: str | None = None) -> pymysql.connections.Connection:
     if database != "":
         kwargs["database"] = database if database is not None else os.getenv("TIDB_DATABASE", "RoutineTrack")
     return pymysql.connect(**kwargs)
+
+
+def configured_database_name() -> str:
+    name = os.getenv("TIDB_DATABASE", "RoutineTrack")
+    if not re.fullmatch(r"[A-Za-z0-9_]+", name):
+        raise RuntimeError("TIDB_DATABASE may contain only letters, numbers, and underscores.")
+    return name
 
 
 def tidb_ssl_config() -> dict[str, str] | None:
@@ -72,7 +127,13 @@ def init_schema() -> None:
         for statement in SCHEMA_PATH.read_text(encoding="utf-8").split(";")
         if statement.strip()
     ]
+    database_name = configured_database_name()
     with connection(database="") as db:
+        with db.cursor() as cursor:
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{database_name}`")
+        db.commit()
+
+    with connection(database=database_name) as db:
         with db.cursor() as cursor:
             for statement in statements:
                 cursor.execute(statement)
@@ -158,6 +219,14 @@ def register():
     display_name = data.get("displayName")
     if not email or not password:
         return jsonify({"error": "email and password are required"}), 400
+    if "@" not in email or len(email) > 255:
+        return jsonify({"error": "invalid email"}), 400
+    if len(password) < 8:
+        return jsonify({"error": "password must contain at least 8 characters"}), 400
+    if display_name is not None:
+        display_name = str(display_name).strip() or None
+        if display_name and len(display_name) > 255:
+            return jsonify({"error": "display name is too long"}), 400
 
     user_id = uuid.uuid4().hex
     timestamp = now_ms()
@@ -176,7 +245,14 @@ def register():
     except pymysql.err.IntegrityError:
         return jsonify({"error": "email already registered"}), 409
 
-    return jsonify({"userId": user_id, "email": email, "displayName": display_name, "token": None}), 201
+    return jsonify(
+        {
+            "userId": user_id,
+            "email": email,
+            "displayName": display_name,
+            "token": issue_token(user_id),
+        }
+    ), 201
 
 
 @app.post("/auth/login")
@@ -196,7 +272,7 @@ def login():
             "userId": user["id"],
             "email": user["email"],
             "displayName": user.get("display_name"),
-            "token": None,
+            "token": issue_token(user["id"]),
         }
     )
 
@@ -204,6 +280,10 @@ def login():
 
 @app.get("/sync/<user_id>")
 def get_sync_data(user_id: str):
+    auth_error = authorize_user(user_id)
+    if auth_error:
+        return auth_error
+
     with connection() as db:
         with db.cursor() as cursor:
             cursor.execute("SELECT * FROM habits WHERE user_id = %s", (user_id,))
@@ -223,7 +303,13 @@ def get_sync_data(user_id: str):
 
 @app.post("/sync/<user_id>")
 def sync_data(user_id: str):
-    data = request.get_json(force=True)
+    auth_error = authorize_user(user_id)
+    if auth_error:
+        return auth_error
+
+    data = json_body()
+    if not isinstance(data.get("habits", []), list) or not isinstance(data.get("completions", []), list):
+        return jsonify({"error": "habits and completions must be arrays"}), 400
     habit_local_ids: dict[str, int] = {}
     completion_local_ids: dict[str, int] = {}
     local_habit_to_remote: dict[int, str] = {}

@@ -17,5 +17,5 @@ data class AuthResponseDto(
     val userId: String,
     val email: String,
     val displayName: String?,
-    val token: String? = null
+    val token: String
 )

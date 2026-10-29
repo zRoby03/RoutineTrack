@@ -1,6 +1,7 @@
-Flask
-Flask-Cors
-gunicorn
-PyMySQL
-python-dotenv
-Werkzeug
+Flask>=3.1,<4
+Flask-Cors>=5,<7
+gunicorn>=23,<24
+itsdangerous>=2.2,<3
+PyMySQL>=1.1,<2
+python-dotenv>=1,<2
+Werkzeug>=3.1,<4

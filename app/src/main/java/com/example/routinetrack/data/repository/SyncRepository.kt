@@ -31,10 +31,12 @@ class SyncRepository(
 ) {
     suspend fun syncNow(): Result<Unit> {
         return runCatching {
-            val userId = currentUserId()
+            val credentials = currentCredentials()
+            val userId = credentials.userId
             val pendingHabits = habitDao.getPendingHabits(userId)
             val pendingCompletions = completionDao.getPendingCompletions(userId)
             val response = apiService.syncData(
+                authorization = credentials.authorization,
                 userId = userId,
                 request = SyncRequestDto(
                     habits = pendingHabits.map { it.toSyncDto() },
@@ -51,8 +53,9 @@ class SyncRepository(
 
     suspend fun restoreFromCloud(): Result<Unit> {
         return runCatching {
-            val userId = currentUserId()
-            val response = apiService.getSyncData(userId)
+            val credentials = currentCredentials()
+            val userId = credentials.userId
+            val response = apiService.getSyncData(credentials.authorization, userId)
             applyRemoteState(userId, response)
             sessionManager.saveLastSync(response.lastSync)
         }
@@ -70,9 +73,15 @@ class SyncRepository(
 
     fun getLastSync(): Long = sessionManager.getLastSync()
 
-    private suspend fun currentUserId(): String {
-        return userDao.getLoggedUserOnce()?.remoteId
+    private suspend fun currentCredentials(): SyncCredentials {
+        val userId = userDao.getLoggedUserOnce()?.remoteId
             ?: error("Effettua il login prima di sincronizzare.")
+        val session = sessionManager.getCurrentUser()
+            ?: error("La sessione è scaduta. Effettua nuovamente il login.")
+        val token = session.token?.takeIf { it.isNotBlank() }
+            ?: error("La sessione non è più valida. Effettua nuovamente il login.")
+        check(session.userId == userId) { "La sessione locale non corrisponde all'utente attivo." }
+        return SyncCredentials(userId, "Bearer $token")
     }
 
     private suspend fun applyRemoteState(userId: String, response: SyncResponseDto) {
@@ -115,6 +124,11 @@ class SyncRepository(
         }
     }
 }
+
+private data class SyncCredentials(
+    val userId: String,
+    val authorization: String
+)
 
 private fun HabitEntity.toSyncDto(): HabitSyncDto {
     return HabitSyncDto(

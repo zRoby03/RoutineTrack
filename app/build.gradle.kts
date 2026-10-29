@@ -17,7 +17,7 @@ fun escapeBuildConfigString(value: String): String {
 val routineTrackApiBaseUrl = normalizeBaseUrl(
     providers.gradleProperty("ROUTINETRACK_API_BASE_URL")
         .orElse(providers.environmentVariable("ROUTINETRACK_API_BASE_URL"))
-        .orElse("https://routinetrack-backend.onrender.com/")
+        .orElse("https://example.invalid/")
         .get()
 )
 
